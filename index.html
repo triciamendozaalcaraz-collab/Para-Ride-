@@ -233,7 +233,6 @@
                         </div>
                         <div class="profile-item">
                             <h3>Payment Method</h3>
-  
                             <p>💵 Cash</p>
                         </div>
                     </div>
@@ -399,25 +398,20 @@
         }
 
         function showDashboard() {
-    document.getElementById('loginForms').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    
-    document.getElementById('userType').textContent =
-        currentUserData.type === 'user'
-        ? `👤 Welcome, ${currentUserData.name}!`
-        : `🚗 ${currentUserData.name} Dashboard`;
-    
-    document.getElementById('profileName').textContent = currentUserData.name;
-    document.getElementById('profileId').textContent = currentUserData.id;
-    document.getElementById('profileType').textContent = currentUserData.type === 'user' ? 'Passenger' : 'Driver';
-    
-    setupNavigation();
-
-    // Initialize map AFTER dashboard is visible
-    setTimeout(() => {
-        initMap();
-    }, 100); // slight delay ensures container has dimensions
-}
+            document.getElementById('loginForms').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            
+            document.getElementById('userType').textContent =
+    currentUserData.type === 'user'
+    ? `👤 Welcome, ${currentUserData.name}!`
+    : `🚗 ${currentUserData.name} Dashboard`;
+            
+            document.getElementById('profileName').textContent = currentUserData.name;
+            document.getElementById('profileId').textContent = currentUserData.id;
+            document.getElementById('profileType').textContent = currentUserData.type === 'user' ? 'Passenger' : 'Driver';
+            
+            setupNavigation();
+        }
 
         function setupNavigation() {
             const nav = document.getElementById('userNav');
@@ -645,5 +639,32 @@ Driver arriving in 3-5 minutes 🚗`);
             }
         });
     </script>
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyAg4g_Ss0ANcD6fi_N3disZES8s40_zLVU",
+    authDomain: "para-web-64d34.firebaseapp.com",
+    projectId: "para-web-64d34",
+    storageBucket: "para-web-64d34.firebasestorage.app",
+    messagingSenderId: "181458365434",
+    appId: "1:181458365434:web:5ec74b2998ca02e77a5243"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // 🔥 TEST CODE (para malaman kung connected)
+  db.collection("test").add({
+    message: "connected!",
+    time: new Date()
+  });
+</script>
+
 </body>
 </html>
+
