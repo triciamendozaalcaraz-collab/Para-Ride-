@@ -153,6 +153,8 @@
             <div class="nav" id="userNav">
                 <!-- Dynamic navigation will be populated by JavaScript -->
             </div>
+            
+            <button class="logout" onclick="logout()">Logout</button>
         </div>
 
         <div class="container">
@@ -203,6 +205,10 @@
                         </div>
                         <button id="bookRideBtn" class="btn btn-primary" style="width: 100%; font-size: 1.3rem;" onclick="bookRide()">🚗 Book Ride Now</button>
                     </div>
+<div id="driverPanel" style="display:none; padding:20px;">
+  <h2>📩 Ride Requests</h2>
+  <div id="requestsList"></div>
+</div>
                     <div id="rideTracker" class="tracker" style="display: none;">
                         <h3>📱 Ride Tracker</h3>
                         <div class="tracker-stage">
@@ -311,6 +317,7 @@
 
     <script>
         let map, userMarker, currentUserType = '', currentUserData = {}, routeLine;
+        let listenerInitialized = false;
         const centerLat = 15.4833, centerLng = 120.9500, radius = 2000; // 2km radius LOCKED
         let rideStages = ['Driver Found', 'En Route', 'Arrived'];
 
@@ -417,7 +424,9 @@
             const nav = document.getElementById('userNav');
             nav.innerHTML = '';
             
+            
             if (currentUserData.type === 'user') {
+
     const userNavItems = [
         {text: '🏠 Home', id: 'home'},
         {text: '👤 Profile', id: 'profile'},
@@ -425,19 +434,24 @@
         {text: '📋 History', id: 'history'},
         {text: '⭐ Rating', id: 'rating'}
     ];
+
     userNavItems.forEach(item => {
         const btn = document.createElement('button');
         btn.className = 'nav-btn';
         btn.textContent = item.text;
-        btn.onclick = () => showSection(item.id);
+        btn.onclick = (e) => showSection(item.id, e.target);
         nav.appendChild(btn);
     });
 
-} else {
+} else if (currentUserData.type === 'driver') {
 
-    // 🔥 IMPORTANT
+    // ❌ alisin booking button
     document.getElementById("bookRideBtn").style.display = "none";
 
+    // ✅ ipakita driver panel
+    document.getElementById('driverPanel').style.display = 'block';
+
+    // ✅ driver nav lang
     const driverNavItems = [
         {text: '🏠 Home', id: 'home'},
         {text: '👤 Profile', id: 'profile'},
@@ -446,24 +460,55 @@
         {text: '📋 History', id: 'history'},
         {text: '🚗 Trips', id: 'trips'}
     ];
-                driverNavItems.forEach(item => {
-                    const btn = document.createElement('button');
-                    btn.className = 'nav-btn';
-                    btn.textContent = item.text;
-                    btn.onclick = () => showSection(item.id);
-                    nav.appendChild(btn);
-                });
-                document.getElementById('address').style.display = 'block';
-                document.getElementById('trips').style.display = 'block';
-            }
-            
-            const logoutBtn = document.createElement('button');
-            logoutBtn.className = 'logout';
-            logoutBtn.textContent = '🚪 Logout';
-            logoutBtn.onclick = logout;
-            nav.appendChild(logoutBtn);
-        }
 
+    driverNavItems.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'nav-btn';
+        btn.textContent = item.text;
+        btn.onclick = () => showSection(item.id);
+        nav.appendChild(btn);
+    });
+
+    // 🔥 listener (driver only)
+    if (!listenerInitialized) {
+    listenerInitialized = true;
+
+    db.collection("rides").onSnapshot((snapshot) => {
+        const list = document.getElementById("requestsList");
+        list.innerHTML = "";
+
+        snapshot.forEach(doc => {
+            const ride = doc.data();
+
+            if (ride.status !== "pending") return;
+
+            const div = document.createElement("div");
+
+            div.innerHTML = `
+                <b>Passenger:</b> ${ride.passenger}<br>
+                <b>From:</b> ${ride.pickup}<br>
+                <b>To:</b> ${ride.dropoff}<br>
+                <b>Fare:</b> ${ride.fare}<br>
+                <button onclick="acceptRide('${doc.id}')">✅ Accept</button>
+            `;
+
+            list.appendChild(div);
+        });
+    });
+}
+} 
+
+
+function acceptRide(id) {
+    db.collection("rides").doc(id).update({
+        status: "accepted",
+        driver: currentUserData.name
+    });
+
+    alert("✅ You accepted the ride!");
+}
+        
+            
         function logout() {
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('landing').style.display = 'flex';
@@ -472,17 +517,14 @@
             if (map) map.setView([centerLat, centerLng], 15);
         }
 
-        function showSection(sectionId) {
-            // Remove active class from all sections
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            // Add active class to selected section
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Remove active class from all nav buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            event.target.classList.add('active');
-        }
+        function showSection(sectionId, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (el) el.classList.add('active');
+}
 
         function calculateFare(passengerType, paxCount) {
             switch(passengerType) {
@@ -570,21 +612,24 @@
         }
 
         function bookRide() {
-            const dest = document.getElementById('destination').textContent;
-            const activePassenger = document.querySelector('.passenger-btn.active');
-            const passengerType = activePassenger ? activePassenger.dataset.type : 'single';
-            const paxCount = activePassenger ? activePassenger.dataset.pax : '1';
-            const fare = document.getElementById('price').textContent;
-            
-            alert(`✅ Ride booked!
-${activePassenger ? activePassenger.textContent : 'Single Passenger'} to ${dest}
-Total: ${fare} (Official Rate)
-Driver arriving in 3-5 minutes 🚗`);
-            
-            document.getElementById('rideTracker').style.display = 'block';
-            showRoute();
-            simulateRideProgress();
-        }
+    const dest = document.getElementById('destination').textContent;
+    const activePassenger = document.querySelector('.passenger-btn.active');
+    const fare = document.getElementById('price').textContent;
+
+    // 🔥 SAVE SA FIRESTORE
+    db.collection("rides").add({
+    passenger: currentUserData.name,
+    pickup: "Good Samaritan Colleges",
+    dropoff: dest,
+    fare: fare,
+    status: "pending",
+    driver: null, // ✅ ADD THIS
+    time: new Date()
+});
+    alert("✅ Ride booked!");
+
+    document.getElementById('rideTracker').style.display = 'block';
+}
 
         function showRoute() {
             if (routeLine) map.removeLayer(routeLine);
@@ -667,16 +712,6 @@ Driver arriving in 3-5 minutes 🚗`);
   db.collection("test").add({
     message: "connected!",
     time: new Date()
-  });
-</script>
-<script>
-db.collection("rides")
-  .where("status", "==", "pending")
-  .onSnapshot((snapshot) => {
-    snapshot.forEach((doc) => {
-      console.log("May bagong ride:", doc.data());
-      alert("May bagong booking!");
-    });
   });
 </script>
 </body>
