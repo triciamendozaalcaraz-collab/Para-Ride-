@@ -201,7 +201,7 @@
                             </div>
                             <div class="price" id="price">₱20</div>
                         </div>
-                        <button class="btn btn-primary" style="width: 100%; font-size: 1.3rem;" onclick="bookRide()">🚗 Book Ride Now</button>
+                        <button id="bookRideBtn" class="btn btn-primary" style="width: 100%; font-size: 1.3rem;" onclick="bookRide()">🚗 Book Ride Now</button>
                     </div>
                     <div id="rideTracker" class="tracker" style="display: none;">
                         <h3>📱 Ride Tracker</h3>
@@ -265,7 +265,7 @@
                     <div class="rating-item">
                         <div>
                             <strong>Juan Dela Cruz</strong><br>
-                            <small>#ABC123 • Toyota Vios • 4.8⭐</small>
+                            <small>#ABC123 • Tricycle • 4.8⭐</small>
                         </div>
                         <div class="stars" id="rateStars">⭐⭐⭐⭐⭐</div>
                     </div>
@@ -418,29 +418,34 @@
             nav.innerHTML = '';
             
             if (currentUserData.type === 'user') {
-                const userNavItems = [
-                    {text: '🏠 Home', id: 'home'},
-                    {text: '👤 Profile', id: 'profile'},
-                    {text: '⭐ Favorites', id: 'favorites'},
-                    {text: '📋 History', id: 'history'},
-                    {text: '⭐ Rating', id: 'rating'}
-                ];
-                userNavItems.forEach(item => {
-                    const btn = document.createElement('button');
-                    btn.className = 'nav-btn';
-                    btn.textContent = item.text;
-                    btn.onclick = () => showSection(item.id);
-                    nav.appendChild(btn);
-                });
-            } else {
-                const driverNavItems = [
-                    {text: '🏠 Home', id: 'home'},
-                    {text: '👤 Profile', id: 'profile'},
-                    {text: '📍 Address', id: 'address'},
-                    {text: '⭐ Rating', id: 'rating'},
-                    {text: '📋 History', id: 'history'},
-                    {text: '🚗 Trips', id: 'trips'}
-                ];
+    const userNavItems = [
+        {text: '🏠 Home', id: 'home'},
+        {text: '👤 Profile', id: 'profile'},
+        {text: '⭐ Favorites', id: 'favorites'},
+        {text: '📋 History', id: 'history'},
+        {text: '⭐ Rating', id: 'rating'}
+    ];
+    userNavItems.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'nav-btn';
+        btn.textContent = item.text;
+        btn.onclick = () => showSection(item.id);
+        nav.appendChild(btn);
+    });
+
+} else {
+
+    // 🔥 IMPORTANT
+    document.getElementById("bookRideBtn").style.display = "none";
+
+    const driverNavItems = [
+        {text: '🏠 Home', id: 'home'},
+        {text: '👤 Profile', id: 'profile'},
+        {text: '📍 Address', id: 'address'},
+        {text: '⭐ Rating', id: 'rating'},
+        {text: '📋 History', id: 'history'},
+        {text: '🚗 Trips', id: 'trips'}
+    ];
                 driverNavItems.forEach(item => {
                     const btn = document.createElement('button');
                     btn.className = 'nav-btn';
