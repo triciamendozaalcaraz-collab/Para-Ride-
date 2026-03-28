@@ -664,7 +664,16 @@ Driver arriving in 3-5 minutes 🚗`);
     time: new Date()
   });
 </script>
-
+<script>
+db.collection("rides")
+  .where("status", "==", "pending")
+  .onSnapshot((snapshot) => {
+    snapshot.forEach((doc) => {
+      console.log("May bagong ride:", doc.data());
+      alert("May bagong booking!");
+    });
+  });
+</script>
 </body>
 </html>
 
